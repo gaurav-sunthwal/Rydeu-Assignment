@@ -25,11 +25,21 @@ export default function Login() {
 
   const handleSubmit = async () => {
     const newErrors: { email?: string; password?: string; api?: string } = {};
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
 
-    if (!email.trim() || !email.includes('@')) {
+    // RFC 5322 standard email regex pattern
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!trimmedEmail) {
+      newErrors.email = 'Email address is required';
+    } else if (!emailRegex.test(trimmedEmail)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    if (password.length < 6) {
+    
+    if (!trimmedPassword) {
+      newErrors.password = 'Password is required';
+    } else if (trimmedPassword.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
@@ -41,18 +51,18 @@ export default function Login() {
     setErrors({});
     setLoading(true);
     try {
-      console.log('Attempting login for:', email.trim());
-      await login(email.trim(), password);
+      console.log('[Login] Attempting sign-in for:', trimmedEmail);
+      await login(trimmedEmail, trimmedPassword);
       router.replace('/');
     } catch (e: any) {
-      console.error('Login handleSubmit failed:', e);
+      console.error('[Login] handleSubmit failed:', e);
       // Auto bypass on API error
       try {
-        console.log('Login failed, attempting auto-bypass...');
+        console.log('[Login] Sign-in failed, attempting auto-bypass...');
         await bypassLogin();
         router.replace('/');
       } catch (bypassErr: any) {
-        console.error('Auto-bypass failed:', bypassErr);
+        console.error('[Login] Auto-bypass failed:', bypassErr);
         setErrors({ api: `Login failed: ${e.message}. Auto-bypass failed: ${bypassErr.message}` });
       }
     } finally {

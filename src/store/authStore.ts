@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { api } from '../services/api';
 
 // In-memory fallback dictionary
@@ -13,9 +14,12 @@ const SafeStorage = {
       if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
         return window.localStorage.getItem(key);
       }
+      if (key === 'auth_user') {
+        return await SecureStore.getItemAsync(key);
+      }
       return await AsyncStorage.getItem(key);
     } catch (e: any) {
-      console.warn('[SafeStorage] getItem failed, falling back to memory storage:', e.message);
+      console.warn(`[SafeStorage] getItem failed for key "${key}", falling back to memory storage:`, e.message);
       return memoryStorage[key] || null;
     }
   },
@@ -25,9 +29,13 @@ const SafeStorage = {
         window.localStorage.setItem(key, value);
         return;
       }
+      if (key === 'auth_user') {
+        await SecureStore.setItemAsync(key, value);
+        return;
+      }
       await AsyncStorage.setItem(key, value);
     } catch (e: any) {
-      console.warn('[SafeStorage] setItem failed, falling back to memory storage:', e.message);
+      console.warn(`[SafeStorage] setItem failed for key "${key}", falling back to memory storage:`, e.message);
       memoryStorage[key] = value;
     }
   },
@@ -37,9 +45,13 @@ const SafeStorage = {
         window.localStorage.removeItem(key);
         return;
       }
+      if (key === 'auth_user') {
+        await SecureStore.deleteItemAsync(key);
+        return;
+      }
       await AsyncStorage.removeItem(key);
     } catch (e: any) {
-      console.warn('[SafeStorage] removeItem failed, falling back to memory storage:', e.message);
+      console.warn(`[SafeStorage] removeItem failed for key "${key}", falling back to memory storage:`, e.message);
       delete memoryStorage[key];
     }
   }
@@ -69,7 +81,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     try {
       const data = await api.login(email, password);
-      console.log('[authStore] API Raw Response Data:', JSON.stringify(data, null, 2));
+      // Redact token from debug logs
+      const safeData = data ? {
+        ...data,
+        data: data.data ? { ...data.data, token: data.data.token ? '***[REDACTED]***' : undefined } : undefined,
+        token: data.token ? '***[REDACTED]***' : undefined,
+      } : null;
+      console.log('[authStore] API Raw Response Data (token redacted):', JSON.stringify(safeData, null, 2));
       
       const user = {
         username: email.split('@')[0],
@@ -77,7 +95,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         token: data?.data?.token || data?.token || 'authenticated-token',
       };
       
-      console.log('[authStore] Saving user from API response:', user);
+      console.log('[authStore] Saving user from API response (token redacted):', { ...user, token: '***[REDACTED]***' });
       try {
         await SafeStorage.setItem('auth_user', JSON.stringify(user));
         await SafeStorage.setItem('has_opened_before', 'true');
@@ -92,7 +110,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Fallback for offline testing / staging server timeout
       if (email === 'rydeu@email10p.org' && password === '123456') {
         const user = { username: 'rydeu', email, token: 'offline-mock-token' };
-        console.log('[authStore] Using demo credentials fallback user:', user);
+        console.log('[authStore] Using demo credentials fallback user (token redacted):', { ...user, token: '***[REDACTED]***' });
         try {
           await SafeStorage.setItem('auth_user', JSON.stringify(user));
           await SafeStorage.setItem('has_opened_before', 'true');
@@ -109,7 +127,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   bypassLogin: async () => {
     const user = { username: 'Rydeu Guest', email: 'demo@rydeu.com', token: 'offline-mock-token' };
-    console.log('[authStore] Bypass login, using user:', user);
+    console.log('[authStore] Bypass login, using user (token redacted):', { ...user, token: '***[REDACTED]***' });
     try {
       await SafeStorage.setItem('auth_user', JSON.stringify(user));
       await SafeStorage.setItem('has_opened_before', 'true');
@@ -136,10 +154,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const storedUser = await SafeStorage.getItem('auth_user');
       const hasOpenedBefore = await SafeStorage.getItem('has_opened_before');
-      console.log('[authStore] Loaded from SafeStorage - User:', storedUser, 'hasOpenedBefore:', hasOpenedBefore);
+      
+      let parsedUser = null;
+      try {
+        if (storedUser) {
+          parsedUser = JSON.parse(storedUser);
+        }
+      } catch {}
+      const loggedUser = parsedUser ? { ...parsedUser, token: '***[REDACTED]***' } : null;
+      console.log('[authStore] Loaded from SafeStorage - User (token redacted):', loggedUser, 'hasOpenedBefore:', hasOpenedBefore);
 
       set({
-        user: storedUser ? JSON.parse(storedUser) : null,
+        user: parsedUser,
         isFirstTime: hasOpenedBefore !== 'true',
         isInitialized: true,
       });
