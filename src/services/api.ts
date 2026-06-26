@@ -23,17 +23,29 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
   };
 
   try {
+    console.log(`[API Request] ${config.method || 'GET'} ${BASE_URL}${endpoint}`);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
     clearTimeout(id);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    console.log(`[API Response] Status: ${response.status} ${response.statusText}`);
+    const rawText = await response.text();
+    console.log(`[API Response Body]:`, rawText);
+
+    let parsedData;
+    try {
+      parsedData = JSON.parse(rawText);
+    } catch (e) {
+      parsedData = { rawText };
     }
 
-    return await response.json();
+    if (!response.ok) {
+      throw new Error(parsedData?.message || `Request failed with status ${response.status}`);
+    }
+
+    return parsedData as T;
   } catch (error: any) {
     clearTimeout(id);
+    console.error(`[API Error] Request to ${endpoint} failed:`, error.message || error);
     // If the API request times out or network connection fails, show "Backend is not working"
     if (error.name === 'AbortError' || error.message?.includes('Network request failed')) {
       throw new Error('Backend is not working');
