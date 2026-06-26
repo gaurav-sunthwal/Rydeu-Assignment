@@ -69,6 +69,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     try {
       const data = await api.login(email, password);
+      console.log('[authStore] API Raw Response Data:', JSON.stringify(data, null, 2));
       
       const user = {
         username: email.split('@')[0],
