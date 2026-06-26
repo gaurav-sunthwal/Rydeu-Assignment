@@ -1,58 +1,116 @@
-# Welcome to your Expo app 👋
+# Rydeu React Native Assignment - Kinetic Travel System
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A premium, high-fidelity React Native mobile application built with **Expo (v56)**, **TypeScript**, and **Zustand** for state management. The app features custom booking capabilities including a **6-month custom calendar** built using **Moment.js** following the design aesthetics of Rydeu.
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Features & Highlights
 
-   ```bash
-   npm install
-   ```
+### 1. Authentication & Security
+*   **Persistent Session:** Utilizes Zustand with AsyncStorage persistence to remember the user's logged-in state across app relaunches.
+*   **Auto Routing:** Automatically directs first-time or logged-out users to the Login page and authenticated users to the Home page.
+*   **Rydeu Login API integration:** Hits the staging API (`https://new-api-staging.rydeu.com/login`) with robust validation, loading indicators, and error feedback.
+*   **Logout Mechanism:** Simple, secure session destruction that safely redirects the user back to login.
 
-2. Start the app
+### 2. Kinetic Home Screen
+*   **User Information:** A clean, modern header showing logged-in user profile details dynamically.
+*   **Interactive Booking Layout:** Ride configuration widget with support for choosing:
+    *   Trip Type (One Way vs. Hourly)
+    *   Pickup & Destination locations
+    *   Pickup Date & Time
+*   **Premium Visuals:** Fully interactive with elegant borders, glassmorphism-inspired effects, micro-animations, and custom icons.
 
-   ```bash
-   npx expo start
-   ```
+### 3. Custom Moment.js 6-Month Calendar
+*   **Zero External UI Calendar Libraries:** Crafted entirely from scratch utilizing **Moment.js** for handling calendar calculations, date ranges, and formats.
+*   **6-Month Scroll:** Allows users to view and scroll through a continuous, performant 6-month list of calendar grids.
+*   **Interactive Selection:** Supports selecting a start date, time input (Hour, Minute, AM/PM), and dynamically outputs the selected date & time back to the Home Screen.
+*   **Time Selector:** Inline custom time input directly integrated into the calendar view.
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠 Tech Stack
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+*   **Framework:** [Expo SDK 56](https://docs.expo.dev/versions/v56.0.0/) (React Native 0.85)
+*   **Language:** TypeScript
+*   **Navigation:** File-based routing via `expo-router`
+*   **State Management:** [Zustand](https://github.com/pmndrs/zustand) (with persist middleware)
+*   **Form Management:** React Hook Form & Zod for client-side validation
+*   **Date Library:** Moment.js
+*   **Icons:** Lucide React Native
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 📂 Project Structure
 
-```bash
-npm run reset-project
+```text
+src/
+├── app/                  # Expo Router navigation routes
+│   ├── _layout.tsx       # Root layout, theme provider, and navigation gate
+│   ├── index.tsx         # Home screen (Ride selection & search)
+│   ├── login.tsx         # Login screen (API call, validation)
+│   └── summary.tsx       # Booking summary details screen
+├── assets/               # Local images, fonts, and static vectors
+├── components/           # Reusable UI component library
+│   ├── booking/
+│   │   └── custom-calendar.tsx  # Custom 6-month calendar component
+│   └── ui/               # Core design components (Button, Input, Card, Tabs, Select)
+├── constants/            # Style constants, colors, and layout configurations
+│   └── theme.ts          # Application color tokens, typography & spacing
+├── services/             # API services and networking layer
+│   └── api.ts            # Authentication requests to Rydeu API
+└── store/                # Zustand global state stores
+    ├── authStore.ts      # Authentication & user profile state
+    ├── bookingStore.ts   # Active ride booking configurations
+    └── themeStore.ts     # Dark/Light mode theme state
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## 🚀 Getting Started
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### Prerequisites
 
-## Learn more
+Make sure you have [Node.js](https://nodejs.org/) (v18+) and [pnpm](https://pnpm.io/) or npm/yarn installed.
 
-To learn more about developing your project with Expo, look at the following resources:
+### Installation
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/gaurav-sunthwal/Rydeu-Assignment.git
+    cd Rydeu-Assignment
+    ```
 
-## Join the community
+2.  **Install Dependencies:**
+    ```bash
+    pnpm install
+    # or
+    npm install
+    ```
 
-Join our community of developers creating universal apps.
+### Running the App
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# Rydeu-Assignment
-# Rydeu-Assignment
+Start the Expo development server:
+```bash
+pnpm start
+# or
+npm run start
+```
+
+*   Press `i` to open in the iOS Simulator.
+*   Press `a` to open in the Android Emulator.
+*   Scan the QR code with the Expo Go app on your physical device to test on mobile.
+
+---
+
+## 🧪 Implementation Specifications & Evaluation Criteria
+
+1.  **Date Picker & Custom Calendar:**
+    Built inside [custom-calendar.tsx](file:///Users/gaurav-sunthwal/Desktop/inten%20assiment%20/Rydeu-Assignment/src/components/booking/custom-calendar.tsx), it renders exactly 6 months starting from the current month. Each month is calculated on-the-fly with Moment.js grid generation (`moment().add(i, 'months')`).
+2.  **State Management:**
+    Uses Zustand stores located in [src/store](file:///Users/gaurav-sunthwal/Desktop/inten%20assiment%20/Rydeu-Assignment/src/store) to maintain separation of concerns:
+    *   [authStore.ts](file:///Users/gaurav-sunthwal/Desktop/inten%20assiment%20/Rydeu-Assignment/src/store/authStore.ts) controls the login session, API token persistence, and logout action.
+    *   [bookingStore.ts](file:///Users/gaurav-sunthwal/Desktop/inten%20assiment%20/Rydeu-Assignment/src/store/bookingStore.ts) handles selected ride variables such as pickup location, destination, and selected calendar dates.
+3.  **Authentication Credentials:**
+    The login screen utilizes the staging API. To sign in:
+    *   **Email:** `rydeu@email10p.org`
+    *   **Password:** `123456`
