@@ -1,5 +1,5 @@
 const BASE_URL = 'https://new-api-staging.rydeu.com';
-const DEFAULT_TIMEOUT = 8000;
+const DEFAULT_TIMEOUT = 30000;
 
 interface RequestOptions extends RequestInit {
   timeout?: number;
